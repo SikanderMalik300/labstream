@@ -239,10 +239,11 @@ class _EnlargedScreenDialog extends StatelessWidget {
             ),
             Expanded(
               child: participant.screenTracks != null &&
-                      participant.screenTracks!.isNotEmpty
-                  ? VideoTrackRenderer(
+                      participant.screenTracks!.isNotEmpty &&
+                      participant.screenTracks!.first.track != null
+                  ? VideoTrackWidget(
                       participant.screenTracks!.first.track!,
-                      fit: RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
+                      fit: BoxFit.contain,
                     )
                   : const Center(
                       child: Text('Screen share not available'),

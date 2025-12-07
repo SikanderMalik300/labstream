@@ -87,40 +87,40 @@ class LiveKitService extends ChangeNotifier {
   void _setupRoomListeners() {
     if (_room == null) return;
 
-    _subscriptions.add(
-      _room!.createListener()
-        ..on<RoomConnectedEvent>((event) {
-          debugPrint('Connected to room');
-          _isConnected = true;
-          notifyListeners();
-        })
-        ..on<RoomDisconnectedEvent>((event) {
-          debugPrint('Disconnected from room');
-          _isConnected = false;
-          notifyListeners();
-        })
-        ..on<ParticipantConnectedEvent>((event) {
-          _onParticipantConnected(event.participant);
-        })
-        ..on<ParticipantDisconnectedEvent>((event) {
-          _onParticipantDisconnected(event.participant);
-        })
-        ..on<TrackPublishedEvent>((event) {
-          _onTrackPublished(event.participant, event.publication);
-        })
-        ..on<TrackUnpublishedEvent>((event) {
-          _onTrackUnpublished(event.participant, event.publication);
-        })
-        ..on<TrackSubscribedEvent>((event) {
-          _onTrackSubscribed(event.participant, event.track, event.publication);
-        })
-        ..on<TrackUnsubscribedEvent>((event) {
-          _onTrackUnsubscribed(event.participant, event.track, event.publication);
-        })
-        ..on<DataReceivedEvent>((event) {
-          _onDataReceived(event.participant, event.data);
-        }),
-    );
+    final listener = _room!.createListener();
+
+    listener
+      ..on<RoomConnectedEvent>((event) {
+        debugPrint('Connected to room');
+        _isConnected = true;
+        notifyListeners();
+      })
+      ..on<RoomDisconnectedEvent>((event) {
+        debugPrint('Disconnected from room');
+        _isConnected = false;
+        notifyListeners();
+      })
+      ..on<ParticipantConnectedEvent>((event) {
+        _onParticipantConnected(event.participant);
+      })
+      ..on<ParticipantDisconnectedEvent>((event) {
+        _onParticipantDisconnected(event.participant);
+      })
+      ..on<TrackPublishedEvent>((event) {
+        _onTrackPublished(event.participant, event.publication);
+      })
+      ..on<TrackUnpublishedEvent>((event) {
+        _onTrackUnpublished(event.participant, event.publication);
+      })
+      ..on<TrackSubscribedEvent>((event) {
+        _onTrackSubscribed(event.participant, event.track, event.publication);
+      })
+      ..on<TrackUnsubscribedEvent>((event) {
+        _onTrackUnsubscribed(event.participant, event.track, event.publication);
+      })
+      ..on<DataReceivedEvent>((event) {
+        _onDataReceived(event.participant, event.data);
+      });
   }
 
   void _onParticipantConnected(RemoteParticipant participant) {

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import '../models/participant.dart';
 import '../models/evaluation.dart';
+import '../models/block.dart';
 import '../services/auth_service.dart';
 import '../services/livekit_service.dart';
 import '../services/chat_service.dart';
