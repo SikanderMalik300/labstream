@@ -32,12 +32,7 @@ logging:
 # Remove for production
 development: true
 
-# Turn server configuration
+# TURN server configuration (disabled for local development)
+# For production deployment, enable and configure properly
 turn:
-  enabled: true
-  domain: ""
-  cert_file: ""
-  key_file: ""
-  tls_port: 5349
-  udp_port: 3478
-  external_tls: false
+  enabled: false
