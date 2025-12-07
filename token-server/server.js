@@ -16,6 +16,15 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  if (req.method === 'POST') {
+    console.log('Body:', JSON.stringify(req.body));
+  }
+  next();
+});
+
 // In-memory storage (replace with PostgreSQL in production)
 const users = new Map();
 const sessions = new Map();
@@ -84,11 +93,14 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // Get LiveKit room token endpoint
-app.post('/api/auth/token', (req, res) => {
+app.post('/api/auth/token', async (req, res) => {
   try {
     const { userId, roomName, role } = req.body;
 
+    console.log('🎫 Token request received:', { userId, roomName, role });
+
     if (!userId || !roomName || !role) {
+      console.log('❌ Missing required fields');
       return res.status(400).json({
         error: 'Missing required fields: userId, roomName, and role are required'
       });
@@ -97,10 +109,15 @@ app.post('/api/auth/token', (req, res) => {
     // Get user data
     const user = users.get(userId);
     if (!user) {
+      console.log('❌ User not found:', userId);
       return res.status(404).json({
         error: 'User not found'
       });
     }
+
+    console.log('✅ User found:', user.fullName);
+    console.log('🔑 Using API Key:', process.env.LIVEKIT_API_KEY);
+    console.log('🔑 Using API Secret:', process.env.LIVEKIT_API_SECRET ? 'SET' : 'NOT SET');
 
     // Create LiveKit access token
     const at = new AccessToken(
@@ -130,11 +147,14 @@ app.post('/api/auth/token', (req, res) => {
       canPublishData
     });
 
-    const token = at.toJwt();
+    const token = await at.toJwt();
+
+    console.log('✅ Token generated successfully');
+    console.log('Token (first 50 chars):', token.substring(0, 50) + '...');
 
     res.json({ token });
   } catch (error) {
-    console.error('Token generation error:', error);
+    console.error('❌ Token generation error:', error);
     res.status(500).json({ error: 'Failed to generate token' });
   }
 });
