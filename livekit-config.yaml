@@ -15,7 +15,7 @@ redis:
 
 keys:
   # API key must match the one in docker-compose.yml
-  FCtPq5a/Bd/eyxyMlOyNhE4q8dncEll5vYNWJ2agpbY=: FCtPq5a/Bd/eyxyMlOyNhE4q8dncEll5vYNWJ2agpbY=
+  XoCUBhzRmVoiAPGWID8eto03PdLtxz/skdb539UOf2A=: XoCUBhzRmVoiAPGWID8eto03PdLtxz/skdb539UOf2A=
 
 room:
   auto_create: true
