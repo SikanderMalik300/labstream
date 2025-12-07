@@ -14,9 +14,8 @@ redis:
   address: ""
 
 keys:
-  # Generate your own API key and secret
-  # Use: openssl rand -base64 32
-  w1BdfR2j6cYlQMBT8c3A3uCdmk79NSrQbU8Puq/JBhU=: w1BdfR2j6cYlQMBT8c3A3uCdmk79NSrQbU8Puq/JBhU=
+  # API key must match the one in docker-compose.yml
+  FCtPq5a/Bd/eyxyMlOyNhE4q8dncEll5vYNWJ2agpbY=: FCtPq5a/Bd/eyxyMlOyNhE4q8dncEll5vYNWJ2agpbY=
 
 room:
   auto_create: true
