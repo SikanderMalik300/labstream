@@ -1,0 +1,66 @@
+version: '3.9'
+
+services:
+  # LiveKit Server
+  livekit:
+    image: livekit/livekit-server:latest
+    command: --config /etc/livekit.yaml
+    ports:
+      - "7880:7880"  # WebSocket
+      - "7881:7881"  # HTTP
+      - "7882:7882"  # TURN/UDP
+      - "50000-50200:50000-50200/udp"  # WebRTC ports
+    volumes:
+      - ./livekit-config.yaml:/etc/livekit.yaml
+    environment:
+      - LIVEKIT_KEYS=API_KEY: your_api_key_here
+    restart: unless-stopped
+    networks:
+      - labstream-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: labstream
+      POSTGRES_USER: labstream_user
+      POSTGRES_PASSWORD: labstream_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - labstream-network
+
+  # Token Server (Node.js)
+  token-server:
+    build:
+      context: ./token-server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - LIVEKIT_API_KEY=your_api_key_here
+      - LIVEKIT_API_SECRET=your_api_secret_here
+      - LIVEKIT_URL=ws://livekit:7880
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=labstream
+      - DB_USER=labstream_user
+      - DB_PASSWORD=labstream_password
+    depends_on:
+      - postgres
+      - livekit
+    restart: unless-stopped
+    networks:
+      - labstream-network
+
+volumes:
+  postgres-data:
+
+networks:
+  labstream-network:
+    driver: bridge
