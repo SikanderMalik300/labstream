@@ -113,10 +113,14 @@ class LiveKitService extends ChangeNotifier {
         _onTrackUnpublished(event.participant, event.publication);
       })
       ..on<TrackSubscribedEvent>((event) {
-        _onTrackSubscribed(event.participant, event.track, event.publication);
+        if (event.track is RemoteTrack) {
+          _onTrackSubscribed(event.participant, event.track as RemoteTrack, event.publication);
+        }
       })
       ..on<TrackUnsubscribedEvent>((event) {
-        _onTrackUnsubscribed(event.participant, event.track, event.publication);
+        if (event.track is RemoteTrack) {
+          _onTrackUnsubscribed(event.participant, event.track as RemoteTrack, event.publication);
+        }
       })
       ..on<DataReceivedEvent>((event) {
         _onDataReceived(event.participant, event.data);
