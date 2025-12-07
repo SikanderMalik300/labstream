@@ -1,0 +1,60 @@
+name: labstream
+description: Real-time communication platform for online examinations and education
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # LiveKit SDK for real-time communication
+  livekit_client: ^2.0.0
+
+  # State management
+  provider: ^6.1.1
+
+  # HTTP and networking
+  http: ^1.1.0
+  dio: ^5.4.0
+
+  # JWT handling
+  dart_jsonwebtoken: ^2.12.1
+
+  # Local storage
+  shared_preferences: ^2.2.2
+  sqflite_common_ffi: ^2.3.0+4
+  path_provider: ^2.1.1
+  path: ^1.8.3
+
+  # UI components
+  cupertino_icons: ^1.0.2
+  flutter_svg: ^2.0.9
+  intl: ^0.18.1
+
+  # Utility
+  uuid: ^4.2.1
+  collection: ^1.18.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  msix: ^3.16.6
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+msix_config:
+  display_name: LabStream
+  publisher_display_name: LabStream Team
+  identity_name: com.labstream.app
+  msix_version: 1.0.0.0
+  logo_path: assets/icons/app_icon.png
+  capabilities: internetClient, microphone, webcam
