@@ -16,7 +16,7 @@ redis:
 keys:
   # Generate your own API key and secret
   # Use: openssl rand -base64 32
-  API_KEY: your_api_key_here
+  w1BdfR2j6cYlQMBT8c3A3uCdmk79NSrQbU8Puq/JBhU=: w1BdfR2j6cYlQMBT8c3A3uCdmk79NSrQbU8Puq/JBhU=
 
 room:
   auto_create: true

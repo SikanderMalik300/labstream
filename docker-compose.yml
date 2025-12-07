@@ -12,8 +12,6 @@ services:
       - "50000-50200:50000-50200/udp"  # WebRTC ports
     volumes:
       - ./livekit-config.yaml:/etc/livekit.yaml
-    environment:
-      - LIVEKIT_KEYS=API_KEY: your_api_key_here
     restart: unless-stopped
     networks:
       - labstream-network
@@ -43,8 +41,8 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
-      - LIVEKIT_API_KEY=your_api_key_here
-      - LIVEKIT_API_SECRET=your_api_secret_here
+      - LIVEKIT_API_KEY=w1BdfR2j6cYlQMBT8c3A3uCdmk79NSrQbU8Puq/JBhU=
+      - LIVEKIT_API_SECRET=w1BdfR2j6cYlQMBT8c3A3uCdmk79NSrQbU8Puq/JBhU=
       - LIVEKIT_URL=ws://livekit:7880
       - DB_HOST=postgres
       - DB_PORT=5432
