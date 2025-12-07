@@ -41,8 +41,8 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
-      - LIVEKIT_API_KEY=w1BdfR2j6cYlQMBT8c3A3uCdmk79NSrQbU8Puq/JBhU=
-      - LIVEKIT_API_SECRET=w1BdfR2j6cYlQMBT8c3A3uCdmk79NSrQbU8Puq/JBhU=
+      - LIVEKIT_API_KEY=FCtPq5a/Bd/eyxyMlOyNhE4q8dncEll5vYNWJ2agpbY=
+      - LIVEKIT_API_SECRET=FCtPq5a/Bd/eyxyMlOyNhE4q8dncEll5vYNWJ2agpbY=
       - LIVEKIT_URL=ws://livekit:7880
       - DB_HOST=postgres
       - DB_PORT=5432
