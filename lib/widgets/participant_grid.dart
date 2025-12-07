@@ -6,6 +6,7 @@ import '../providers/app_provider.dart';
 import 'participant_tile.dart';
 import 'evaluation_dialog.dart';
 import 'block_dialog.dart';
+import 'video_renderer.dart';
 
 class ParticipantGrid extends StatelessWidget {
   const ParticipantGrid({super.key});
@@ -241,8 +242,9 @@ class _EnlargedScreenDialog extends StatelessWidget {
               child: participant.screenTracks != null &&
                       participant.screenTracks!.isNotEmpty &&
                       participant.screenTracks!.first.track != null
-                  ? VideoTrack(
+                  ? VideoRenderer(
                       participant.screenTracks!.first.track!,
+                      fit: BoxFit.contain,
                     )
                   : const Center(
                       child: Text('Screen share not available'),

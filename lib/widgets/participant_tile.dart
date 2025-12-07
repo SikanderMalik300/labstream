@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart';
 import '../models/participant.dart';
 import '../config/app_theme.dart';
+import 'video_renderer.dart';
 
 class ParticipantTile extends StatelessWidget {
   final ParticipantData participant;
@@ -181,8 +182,9 @@ class ParticipantTile extends StatelessWidget {
       );
     }
 
-    return VideoTrack(
+    return VideoRenderer(
       track,
+      fit: BoxFit.contain,
     );
   }
 
