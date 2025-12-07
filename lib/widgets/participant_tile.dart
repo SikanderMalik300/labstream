@@ -181,9 +181,8 @@ class ParticipantTile extends StatelessWidget {
       );
     }
 
-    return VideoTrackWidget(
+    return VideoTrack(
       track,
-      fit: BoxFit.contain,
     );
   }
 
