@@ -3,8 +3,8 @@
 // Test script to verify LiveKit token generation
 const { AccessToken } = require('livekit-server-sdk');
 
-const API_KEY = 'FCtPq5a/Bd/eyxyMlOyNhE4q8dncEll5vYNWJ2agpbY=';
-const API_SECRET = 'FCtPq5a/Bd/eyxyMlOyNhE4q8dncEll5vYNWJ2agpbY=';
+const API_KEY = 'XoCUBhzRmVoiAPGWID8eto03PdLtxz/skdb539UOf2A=';
+const API_SECRET = 'XoCUBhzRmVoiAPGWID8eto03PdLtxz/skdb539UOf2A=';
 
 async function testTokenGeneration() {
   console.log('Testing LiveKit Token Generation');
