@@ -27,11 +27,11 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final user = User(
-          id: data['userId'] as String,
+          id: data['userId'].toString(),
           fullName: fullName,
           universityId: universityId,
           role: UserRole.student,
-          token: data['token'] as String,
+          token: data['token'].toString(),
           createdAt: DateTime.now(),
         );
 
@@ -60,10 +60,10 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final user = User(
-          id: data['userId'] as String,
+          id: data['userId'].toString(),
           fullName: fullName,
           role: UserRole.instructor,
-          token: data['token'] as String,
+          token: data['token'].toString(),
           createdAt: DateTime.now(),
         );
 
@@ -96,7 +96,14 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['token'] as String;
+        // Handle both string and map responses
+        if (data is Map<String, dynamic>) {
+          return data['token'].toString();
+        } else if (data is String) {
+          return data;
+        } else {
+          throw Exception('Unexpected token response format');
+        }
       } else {
         throw Exception('Token generation failed: ${response.body}');
       }
