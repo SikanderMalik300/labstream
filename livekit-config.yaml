@@ -2,9 +2,6 @@ port: 7880
 bind_addresses:
   - "0.0.0.0"
 
-# Explicitly enable RTC and HTTP
-http_relay_port: 7880
-
 rtc:
   port_range_start: 50000
   port_range_end: 50200
