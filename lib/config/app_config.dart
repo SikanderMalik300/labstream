@@ -8,7 +8,7 @@ class AppConfig {
   // LiveKit Server Configuration
   static const String liveKitUrl = String.fromEnvironment(
     'LIVEKIT_URL',
-    defaultValue: 'ws://localhost:7880',
+    defaultValue: 'http://localhost:7880',
   );
 
   // App Settings
