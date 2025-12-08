@@ -30,6 +30,10 @@ class AppProvider extends ChangeNotifier {
     _chatService = ChatService(_liveKitService, _databaseService);
     _evaluationService = EvaluationService(_databaseService);
     _blockService = BlockService(_databaseService);
+
+    // Register control message handler for kick/mute commands
+    _liveKitService.registerControlHandler(_handleControlMessage);
+
     _initialize();
   }
 
@@ -51,6 +55,46 @@ class AppProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error initializing app: $e');
+    }
+  }
+
+  // Handle control messages from instructor (mute, remove, etc.)
+  Future<void> _handleControlMessage(String controlType, Map<String, dynamic> data) async {
+    if (_currentUser == null) return;
+
+    try {
+      switch (controlType) {
+        case 'remove':
+          // Check if this remove command is for the current user
+          final targetId = data['targetId'] as String?;
+          if (targetId == _currentUser!.id) {
+            debugPrint('⚠️ You have been removed from the room by the instructor');
+            // Disconnect and return to login screen
+            await leaveRoom();
+          }
+          break;
+
+        case 'mute':
+          // Check if this mute command is for the current user
+          final targetId = data['targetId'] as String?;
+          if (targetId == _currentUser!.id) {
+            debugPrint('🔇 You have been muted by the instructor');
+            // Disable microphone
+            await _liveKitService.disableMicrophone();
+          }
+          break;
+
+        case 'muteAll':
+          // Mute all students (not instructors)
+          if (_currentUser!.isStudent) {
+            debugPrint('🔇 All students have been muted by the instructor');
+            // Disable microphone
+            await _liveKitService.disableMicrophone();
+          }
+          break;
+      }
+    } catch (e) {
+      debugPrint('Error handling control message: $e');
     }
   }
 

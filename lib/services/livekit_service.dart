@@ -14,6 +14,7 @@ class LiveKitService extends ChangeNotifier {
   bool _isConnected = false;
   String? _currentRoomName;
   Function(Map<String, dynamic>)? _onDataCallback;
+  Function(String controlType, Map<String, dynamic> data)? _onControlCallback;
 
   Room? get room => _room;
   bool get isConnected => _isConnected;
@@ -269,10 +270,17 @@ class LiveKitService extends ChangeNotifier {
       final jsonString = utf8.decode(data);
       final decodedData = jsonDecode(jsonString) as Map<String, dynamic>;
 
-      debugPrint('Data received from ${participant?.identity}: ${decodedData['type']}');
+      final messageType = decodedData['type'] as String?;
+      debugPrint('Data received from ${participant?.identity}: $messageType');
 
-      // Forward to registered callback (ChatService)
-      _onDataCallback?.call(decodedData);
+      // Separate control messages from chat messages
+      if (messageType == 'mute' || messageType == 'muteAll' || messageType == 'remove') {
+        // Control message - forward to control handler
+        _onControlCallback?.call(messageType, decodedData);
+      } else if (messageType == 'chat') {
+        // Chat message - forward to chat handler
+        _onDataCallback?.call(decodedData);
+      }
     } catch (e) {
       debugPrint('Error handling received data: $e');
     }
@@ -286,6 +294,16 @@ class LiveKitService extends ChangeNotifier {
   // Unregister data handler
   void unregisterDataHandler() {
     _onDataCallback = null;
+  }
+
+  // Register a callback for control messages (mute, remove, etc.)
+  void registerControlHandler(Function(String controlType, Map<String, dynamic> data) handler) {
+    _onControlCallback = handler;
+  }
+
+  // Unregister control handler
+  void unregisterControlHandler() {
+    _onControlCallback = null;
   }
 
   // Enable microphone
