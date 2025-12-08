@@ -71,12 +71,20 @@ class LiveKitService extends ChangeNotifier {
       _localParticipant = _room!.localParticipant;
       _isConnected = true;
 
-      // For students: enable microphone
-      if (currentUser.isStudent) {
-        await enableMicrophone();
-      }
-
+      debugPrint('Successfully connected to LiveKit room');
       notifyListeners();
+
+      // Try to enable microphone for students (non-blocking)
+      if (currentUser.isStudent) {
+        Future.delayed(const Duration(milliseconds: 500), () async {
+          try {
+            await enableMicrophone();
+          } catch (e) {
+            debugPrint('Could not auto-enable microphone: $e');
+            // Non-critical error - user can manually enable later
+          }
+        });
+      }
     } catch (e) {
       debugPrint('Error connecting to LiveKit: $e');
       rethrow;
@@ -229,22 +237,33 @@ class LiveKitService extends ChangeNotifier {
   // Enable microphone
   Future<void> enableMicrophone() async {
     try {
-      await _localParticipant?.setMicrophoneEnabled(true);
+      if (_localParticipant == null || _room == null) {
+        throw Exception('Not connected to room');
+      }
+
+      await _localParticipant!.setMicrophoneEnabled(true);
+      debugPrint('Microphone enabled successfully');
       notifyListeners();
     } catch (e) {
       debugPrint('Error enabling microphone: $e');
-      rethrow;
+      // Don't rethrow - this is a non-critical error
+      // User can try again manually
     }
   }
 
   // Disable microphone
   Future<void> disableMicrophone() async {
     try {
-      await _localParticipant?.setMicrophoneEnabled(false);
+      if (_localParticipant == null || _room == null) {
+        throw Exception('Not connected to room');
+      }
+
+      await _localParticipant!.setMicrophoneEnabled(false);
+      debugPrint('Microphone disabled successfully');
       notifyListeners();
     } catch (e) {
       debugPrint('Error disabling microphone: $e');
-      rethrow;
+      // Don't rethrow - this is a non-critical error
     }
   }
 
