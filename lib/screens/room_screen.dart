@@ -78,19 +78,20 @@ class _RoomScreenState extends State<RoomScreen> {
                 tooltip: 'Toggle Microphone',
               ),
 
-              // Screen share toggle
-              IconButton(
-                icon: Icon(
-                  provider.liveKitService.localParticipant
-                              ?.isScreenShareEnabled() ==
-                          true
-                      ? Icons.stop_screen_share
-                      : Icons.screen_share,
-                  size: 18,
-                ),
-                onPressed: provider.toggleScreenShare,
-                tooltip: 'Toggle Screen Share',
-              ),
+              // Screen share toggle - DISABLED (requires Windows platform setup)
+              // TODO: Implement Windows screen capture using screen_retriever package
+              // IconButton(
+              //   icon: Icon(
+              //     provider.liveKitService.localParticipant
+              //                 ?.isScreenShareEnabled() ==
+              //             true
+              //         ? Icons.stop_screen_share
+              //         : Icons.screen_share,
+              //     size: 18,
+              //   ),
+              //   onPressed: provider.toggleScreenShare,
+              //   tooltip: 'Toggle Screen Share',
+              // ),
 
               // Mute all (instructor only)
               if (provider.isInstructor)
