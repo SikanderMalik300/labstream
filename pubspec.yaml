@@ -13,6 +13,9 @@ dependencies:
   # LiveKit SDK for real-time communication
   livekit_client: ^2.0.0
 
+  # Screen capture for desktop
+  screen_retriever: ^0.1.9
+
   # State management
   provider: ^6.1.1
 

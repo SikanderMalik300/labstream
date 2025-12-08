@@ -251,10 +251,27 @@ class LiveKitService extends ChangeNotifier {
   // Start screen sharing
   Future<void> startScreenShare() async {
     try {
-      await _localParticipant?.setScreenShareEnabled(true);
+      if (_localParticipant == null) {
+        throw Exception('Not connected to room');
+      }
+
+      // For desktop platforms, LiveKit will handle screen capture
+      // Make sure the app has screen capture permissions
+      await _localParticipant!.setScreenShareEnabled(
+        true,
+        captureScreenAudio: false, // Set to true if you want to capture system audio
+      );
+
+      debugPrint('Screen share started successfully');
       notifyListeners();
     } catch (e) {
       debugPrint('Error starting screen share: $e');
+      // Provide more user-friendly error message
+      if (e.toString().contains('getDisplayMedia')) {
+        throw Exception(
+          'Screen sharing is not available. Please ensure the app has screen capture permissions.'
+        );
+      }
       rethrow;
     }
   }
@@ -262,7 +279,12 @@ class LiveKitService extends ChangeNotifier {
   // Stop screen sharing
   Future<void> stopScreenShare() async {
     try {
-      await _localParticipant?.setScreenShareEnabled(false);
+      if (_localParticipant == null) {
+        throw Exception('Not connected to room');
+      }
+
+      await _localParticipant!.setScreenShareEnabled(false);
+      debugPrint('Screen share stopped successfully');
       notifyListeners();
     } catch (e) {
       debugPrint('Error stopping screen share: $e');
