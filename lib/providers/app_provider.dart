@@ -135,24 +135,52 @@ class AppProvider extends ChangeNotifier {
   // Leave room
   Future<void> leaveRoom() async {
     try {
+      // Disconnect from LiveKit
       await _liveKitService.disconnect();
+
+      // Clear all chat messages and state
       await _chatService.clearMessages();
+
+      // Clear session
       _currentSessionId = null;
+
+      // Clear any error state
+      _setError(null);
+
+      debugPrint('Left room successfully');
       notifyListeners();
     } catch (e) {
       debugPrint('Error leaving room: $e');
+      _setError(e.toString());
     }
   }
 
   // Logout
   Future<void> logout() async {
     try {
-      await leaveRoom();
+      // Leave the room first (if in one)
+      if (_liveKitService.isConnected) {
+        await leaveRoom();
+      }
+
+      // Clear auth data
       await _authService.logout();
+
+      // Clear user state
       _currentUser = null;
+      _currentSessionId = null;
+
+      // Clear any cached messages
+      await _chatService.clearMessages();
+
+      // Clear error state
+      _setError(null);
+
+      debugPrint('Logged out successfully');
       notifyListeners();
     } catch (e) {
       debugPrint('Error logging out: $e');
+      _setError(e.toString());
     }
   }
 

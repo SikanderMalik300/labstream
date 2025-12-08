@@ -14,7 +14,8 @@ class ChatService extends ChangeNotifier {
   final Set<String> _raisedHands = {};
 
   ChatService(this._liveKitService, this._databaseService) {
-    _loadMessagesFromDatabase();
+    // Don't load old messages - start fresh for each session
+    // Messages will be populated as they arrive in real-time
   }
 
   List<ChatMessage> get messages => List.unmodifiable(_messages);
