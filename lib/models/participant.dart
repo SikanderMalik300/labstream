@@ -14,13 +14,14 @@ class ParticipantData {
   final String fullName;
   final String? universityId;
   final UserRole role;
+  final bool isLocal;
   final bool isAudioMuted;
   final bool isVideoMuted;
   final bool isSharingScreen;
   final bool hasHandRaised;
   final bool isBlocked;
   final DateTime? blockedUntil;
-  final RemoteParticipant? liveKitParticipant;
+  final Participant? liveKitParticipant; // Changed from RemoteParticipant to Participant
   final List<RemoteTrackPublication<RemoteVideoTrack>>? screenTracks;
   final RemoteTrackPublication<RemoteAudioTrack>? audioTrack;
 
@@ -29,6 +30,7 @@ class ParticipantData {
     required this.fullName,
     this.universityId,
     required this.role,
+    this.isLocal = false,
     this.isAudioMuted = false,
     this.isVideoMuted = false,
     this.isSharingScreen = false,
@@ -53,13 +55,14 @@ class ParticipantData {
     String? fullName,
     String? universityId,
     UserRole? role,
+    bool? isLocal,
     bool? isAudioMuted,
     bool? isVideoMuted,
     bool? isSharingScreen,
     bool? hasHandRaised,
     bool? isBlocked,
     DateTime? blockedUntil,
-    RemoteParticipant? liveKitParticipant,
+    Participant? liveKitParticipant,
     List<RemoteTrackPublication<RemoteVideoTrack>>? screenTracks,
     RemoteTrackPublication<RemoteAudioTrack>? audioTrack,
   }) {
@@ -68,6 +71,7 @@ class ParticipantData {
       fullName: fullName ?? this.fullName,
       universityId: universityId ?? this.universityId,
       role: role ?? this.role,
+      isLocal: isLocal ?? this.isLocal,
       isAudioMuted: isAudioMuted ?? this.isAudioMuted,
       isVideoMuted: isVideoMuted ?? this.isVideoMuted,
       isSharingScreen: isSharingScreen ?? this.isSharingScreen,
