@@ -172,11 +172,14 @@ class ChatService extends ChangeNotifier {
     _messages.add(message);
     notifyListeners();
 
-    try {
-      await _databaseService.saveChatMessage(message);
-    } catch (e) {
-      debugPrint('Error saving message to database: $e');
-    }
+    // Save to database in background (non-critical)
+    Future(() async {
+      try {
+        await _databaseService.saveChatMessage(message);
+      } catch (e) {
+        // Silently ignore database errors - chat works without persistence
+      }
+    });
   }
 
   // Clear all messages
