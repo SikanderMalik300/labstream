@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
@@ -114,10 +115,20 @@ class AuthService {
 
   // Save user to local storage
   Future<void> _saveUser(User user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userKey, jsonEncode(user.toJson()));
-    if (user.token != null) {
-      await prefs.setString(_tokenKey, user.token!);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = jsonEncode(user.toJson());
+      await prefs.setString(_userKey, userJson);
+      if (user.token != null) {
+        await prefs.setString(_tokenKey, user.token!);
+      }
+    } catch (e) {
+      debugPrint('Error saving user: $e');
+      // Clear corrupted data
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_userKey);
+      await prefs.remove(_tokenKey);
+      rethrow;
     }
   }
 
@@ -131,6 +142,11 @@ class AuthService {
       final userData = jsonDecode(userJson);
       return User.fromJson(userData);
     } catch (e) {
+      debugPrint('Error loading user, clearing corrupted data: $e');
+      // Clear corrupted data and return null
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_userKey);
+      await prefs.remove(_tokenKey);
       return null;
     }
   }
@@ -152,5 +168,16 @@ class AuthService {
   Future<bool> isAuthenticated() async {
     final user = await getCurrentUser();
     return user != null;
+  }
+
+  // Clear all stored data (for troubleshooting)
+  Future<void> clearAllData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      debugPrint('All stored data cleared');
+    } catch (e) {
+      debugPrint('Error clearing data: $e');
+    }
   }
 }
