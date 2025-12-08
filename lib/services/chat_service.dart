@@ -16,6 +16,10 @@ class ChatService extends ChangeNotifier {
   ChatService(this._liveKitService, this._databaseService) {
     // Don't load old messages - start fresh for each session
     // Messages will be populated as they arrive in real-time
+
+    // Register to receive data channel messages from LiveKit
+    _liveKitService.registerDataHandler(handleIncomingMessage);
+    debugPrint('ChatService initialized and registered for data events');
   }
 
   List<ChatMessage> get messages => List.unmodifiable(_messages);

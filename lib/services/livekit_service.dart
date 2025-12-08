@@ -13,6 +13,7 @@ class LiveKitService extends ChangeNotifier {
   final List<StreamSubscription> _subscriptions = [];
   bool _isConnected = false;
   String? _currentRoomName;
+  Function(Map<String, dynamic>)? _onDataCallback;
 
   Room? get room => _room;
   bool get isConnected => _isConnected;
@@ -72,6 +73,13 @@ class LiveKitService extends ChangeNotifier {
       _isConnected = true;
 
       debugPrint('Successfully connected to LiveKit room');
+
+      // Add local participant to the list (yourself)
+      await _addLocalParticipant(currentUser);
+
+      // Load existing remote participants already in the room
+      _loadExistingParticipants();
+
       notifyListeners();
 
       // Try to enable microphone for students (non-blocking)
@@ -89,6 +97,33 @@ class LiveKitService extends ChangeNotifier {
       debugPrint('Error connecting to LiveKit: $e');
       rethrow;
     }
+  }
+
+  // Add local participant to the participant list
+  Future<void> _addLocalParticipant(User currentUser) async {
+    if (_localParticipant == null) return;
+
+    _participants[_localParticipant!.sid] = ParticipantData(
+      id: currentUser.id,
+      fullName: currentUser.fullName,
+      universityId: currentUser.universityId,
+      role: currentUser.role,
+      liveKitParticipant: _localParticipant!,
+      isLocal: true,
+    );
+
+    debugPrint('Added local participant: ${currentUser.fullName}');
+  }
+
+  // Load existing participants when joining a room
+  void _loadExistingParticipants() {
+    if (_room == null) return;
+
+    for (final participant in _room!.remoteParticipants.values) {
+      _onParticipantConnected(participant);
+    }
+
+    debugPrint('Loaded ${_room!.remoteParticipants.length} existing participants');
   }
 
   // Setup room event listeners
@@ -229,9 +264,28 @@ class LiveKitService extends ChangeNotifier {
   }
 
   void _onDataReceived(RemoteParticipant? participant, List<int> data) {
-    // Handle data channel messages (chat, hand raise, etc.)
-    // This will be implemented in ChatService
-    debugPrint('Data received from ${participant?.identity}');
+    try {
+      // Decode the data
+      final jsonString = utf8.decode(data);
+      final decodedData = jsonDecode(jsonString) as Map<String, dynamic>;
+
+      debugPrint('Data received from ${participant?.identity}: ${decodedData['type']}');
+
+      // Forward to registered callback (ChatService)
+      _onDataCallback?.call(decodedData);
+    } catch (e) {
+      debugPrint('Error handling received data: $e');
+    }
+  }
+
+  // Register a callback for data channel messages
+  void registerDataHandler(Function(Map<String, dynamic>) handler) {
+    _onDataCallback = handler;
+  }
+
+  // Unregister data handler
+  void unregisterDataHandler() {
+    _onDataCallback = null;
   }
 
   // Enable microphone
