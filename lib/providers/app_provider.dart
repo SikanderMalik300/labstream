@@ -31,6 +31,10 @@ class AppProvider extends ChangeNotifier {
     _evaluationService = EvaluationService(_databaseService);
     _blockService = BlockService(_databaseService);
 
+    // Forward notifications from services to UI
+    _chatService.addListener(notifyListeners);
+    _liveKitService.addListener(notifyListeners);
+
     // Register control message handler for kick/mute commands
     _liveKitService.registerControlHandler(_handleControlMessage);
 
@@ -81,6 +85,8 @@ class AppProvider extends ChangeNotifier {
             debugPrint('🔇 You have been muted by the instructor');
             // Disable microphone
             await _liveKitService.disableMicrophone();
+            // Update UI immediately
+            notifyListeners();
           }
           break;
 
@@ -90,6 +96,8 @@ class AppProvider extends ChangeNotifier {
             debugPrint('🔇 All students have been muted by the instructor');
             // Disable microphone
             await _liveKitService.disableMicrophone();
+            // Update UI immediately
+            notifyListeners();
           }
           break;
       }
@@ -246,6 +254,9 @@ class AppProvider extends ChangeNotifier {
       } else {
         await _liveKitService.enableMicrophone();
       }
+
+      // Notify listeners to update UI immediately
+      notifyListeners();
     } catch (e) {
       _setError('Failed to toggle microphone: $e');
     }
@@ -263,6 +274,9 @@ class AppProvider extends ChangeNotifier {
       } else {
         await _liveKitService.startScreenShare();
       }
+
+      // Notify listeners to update UI immediately
+      notifyListeners();
     } catch (e) {
       _setError('Failed to toggle screen share: $e');
     }
@@ -306,6 +320,8 @@ class AppProvider extends ChangeNotifier {
     try {
       if (!isInstructor) return;
       await _liveKitService.muteParticipant(participantSid);
+      notifyListeners();
+      debugPrint('✅ Mute command sent to participant');
     } catch (e) {
       _setError('Failed to mute participant: $e');
     }
@@ -316,6 +332,8 @@ class AppProvider extends ChangeNotifier {
     try {
       if (!isInstructor) return;
       await _liveKitService.muteAllParticipants();
+      notifyListeners();
+      debugPrint('✅ Mute all command sent');
     } catch (e) {
       _setError('Failed to mute all: $e');
     }
@@ -326,6 +344,8 @@ class AppProvider extends ChangeNotifier {
     try {
       if (!isInstructor) return;
       await _liveKitService.removeParticipant(participantSid);
+      notifyListeners();
+      debugPrint('✅ Kick command sent to participant');
     } catch (e) {
       _setError('Failed to remove participant: $e');
     }
@@ -350,6 +370,8 @@ class AppProvider extends ChangeNotifier {
       );
 
       await removeParticipant(participantSid);
+      notifyListeners();
+      debugPrint('✅ Block and kick command sent');
     } catch (e) {
       _setError('Failed to block participant: $e');
     }
@@ -407,6 +429,10 @@ class AppProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    // Remove listeners to prevent memory leaks
+    _chatService.removeListener(notifyListeners);
+    _liveKitService.removeListener(notifyListeners);
+
     _liveKitService.dispose();
     super.dispose();
   }
