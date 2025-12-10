@@ -14,7 +14,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
-  final _universityIdController = TextEditingController();
+  final _studentIdController = TextEditingController();
+  final _instructorIdController = TextEditingController();
   final _roomNameController = TextEditingController();
   final _liveKitUrlController = TextEditingController(text: 'ws://localhost:7880');
 
@@ -24,7 +25,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _fullNameController.dispose();
-    _universityIdController.dispose();
+    _studentIdController.dispose();
+    _instructorIdController.dispose();
     _roomNameController.dispose();
     _liveKitUrlController.dispose();
     super.dispose();
@@ -42,11 +44,12 @@ class _LoginScreenState extends State<LoginScreen> {
       if (_selectedRole == UserRole.student) {
         await provider.loginStudent(
           fullName: _fullNameController.text.trim(),
-          universityId: _universityIdController.text.trim(),
+          studentId: _studentIdController.text.trim(),
         );
       } else {
         await provider.loginInstructor(
           fullName: _fullNameController.text.trim(),
+          instructorId: _instructorIdController.text.trim(),
         );
       }
 
@@ -156,18 +159,38 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // University ID (only for students)
+                // Student ID (only for students)
                 if (_selectedRole == UserRole.student) ...[
                   TextFormField(
-                    controller: _universityIdController,
+                    controller: _studentIdController,
                     decoration: const InputDecoration(
-                      labelText: 'University ID',
-                      hintText: 'Enter your university ID',
+                      labelText: 'Student ID',
+                      hintText: 'Enter your student ID',
                     ),
                     validator: (value) {
                       if (_selectedRole == UserRole.student) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your university ID';
+                          return 'Please enter your student ID';
+                        }
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Instructor ID (only for instructors)
+                if (_selectedRole == UserRole.instructor) ...[
+                  TextFormField(
+                    controller: _instructorIdController,
+                    decoration: const InputDecoration(
+                      labelText: 'Instructor ID',
+                      hintText: 'Enter your instructor ID',
+                    ),
+                    validator: (value) {
+                      if (_selectedRole == UserRole.instructor) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your instructor ID';
                         }
                       }
                       return null;

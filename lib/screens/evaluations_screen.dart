@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -20,28 +21,60 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
   void initState() {
     super.initState();
     _loadEvaluations();
+    // Set up periodic refresh to check for new evaluations
+    Future.delayed(const Duration(seconds: 2), _setupAutoRefresh);
+  }
+
+  void _setupAutoRefresh() {
+    if (!mounted) return;
+    // Refresh evaluations every 5 seconds for real-time updates
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        _loadEvaluations();
+        _setupAutoRefresh();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Clean up is handled by mounted check
+    super.dispose();
   }
 
   Future<void> _loadEvaluations() async {
+    if (!mounted) return;
+
     setState(() => _isLoading = true);
 
     try {
       final provider = context.read<AppProvider>();
+
+      // Check if user is logged in
+      if (provider.currentUser == null) {
+        throw Exception('User not logged in');
+      }
+
       final evaluations = await provider.getStudentEvaluations();
 
       if (mounted) {
         setState(() {
-          _evaluations = evaluations;
+          _evaluations = evaluations ?? [];
           _isLoading = false;
         });
       }
     } catch (e) {
+      debugPrint('Error loading evaluations: $e');
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _evaluations = [];
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load evaluations: $e'),
+            content: Text('Failed to load evaluations: ${e.toString()}'),
             backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
