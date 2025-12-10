@@ -120,6 +120,14 @@ labstream/
 
 ## Quick Start Guide
 
+> **📖 NEW: Detailed Setup Guide Available!**
+>
+> For a comprehensive step-by-step guide with database setup and video recording instructions, see:
+> - **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Complete setup guide with database access instructions
+> - **[VIDEO_INSTRUCTIONS.md](VIDEO_INSTRUCTIONS.md)** - Video recording guide and script
+>
+> The quick start guide below provides a faster overview.
+
 ### Option 1: Using Docker (Recommended)
 
 #### Step 1: Clone the Repository
@@ -325,7 +333,7 @@ DB_PASSWORD=your_password
 
 1. **Login**
    - Enter your full name
-   - Enter your university ID
+   - Enter your student ID
    - Select "Student" role
    - Enter room name
    - Enter LiveKit server URL
@@ -342,6 +350,7 @@ DB_PASSWORD=your_password
 
 1. **Login**
    - Enter your full name
+   - Enter your instructor ID
    - Select "Instructor" role
    - Enter room name (create a new one)
    - Enter LiveKit server URL
@@ -387,7 +396,7 @@ Login and create user session.
 ```json
 {
   "fullName": "John Doe",
-  "universityId": "STD001",
+  "studentId": "STD001",
   "role": "student"
 }
 ```
@@ -592,6 +601,15 @@ For issues and questions:
 ---
 
 ## Changelog
+
+### Version 1.1.0 (Latest)
+- ✅ Renamed "University ID" to "Student ID" throughout the application
+- ✅ Added "Instructor ID" field for instructor identification
+- ✅ Implemented real-time data updates (evaluations auto-refresh every 5 seconds)
+- ✅ Improved error handling in evaluation screen
+- ✅ Updated database schema with `student_id` and `instructor_id` fields
+- ✅ Enhanced documentation with detailed setup guide
+- ✅ Added video recording instructions for setup tutorials
 
 ### Version 1.0.0 (Initial Release)
 - Complete MVP implementation

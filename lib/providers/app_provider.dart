@@ -101,7 +101,7 @@ class AppProvider extends ChangeNotifier {
   // Login as student
   Future<void> loginStudent({
     required String fullName,
-    required String universityId,
+    required String studentId,
   }) async {
     try {
       _setLoading(true);
@@ -109,7 +109,7 @@ class AppProvider extends ChangeNotifier {
 
       _currentUser = await _authService.loginStudent(
         fullName: fullName,
-        universityId: universityId,
+        studentId: studentId,
       );
 
       notifyListeners();
@@ -122,12 +122,18 @@ class AppProvider extends ChangeNotifier {
   }
 
   // Login as instructor
-  Future<void> loginInstructor({required String fullName}) async {
+  Future<void> loginInstructor({
+    required String fullName,
+    required String instructorId,
+  }) async {
     try {
       _setLoading(true);
       _setError(null);
 
-      _currentUser = await _authService.loginInstructor(fullName: fullName);
+      _currentUser = await _authService.loginInstructor(
+        fullName: fullName,
+        instructorId: instructorId,
+      );
 
       notifyListeners();
     } catch (e) {
@@ -365,6 +371,9 @@ class AppProvider extends ChangeNotifier {
         score: score,
         notes: notes,
       );
+
+      // Notify listeners so UI updates
+      notifyListeners();
     } catch (e) {
       _setError('Failed to save evaluation: $e');
     }

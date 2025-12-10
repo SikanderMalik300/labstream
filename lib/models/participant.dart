@@ -12,7 +12,8 @@ enum ParticipantStatus {
 class ParticipantData {
   final String id;
   final String fullName;
-  final String? universityId;
+  final String? studentId;
+  final String? instructorId;
   final UserRole role;
   final bool isLocal;
   final bool isAudioMuted;
@@ -28,7 +29,8 @@ class ParticipantData {
   ParticipantData({
     required this.id,
     required this.fullName,
-    this.universityId,
+    this.studentId,
+    this.instructorId,
     required this.role,
     this.isLocal = false,
     this.isAudioMuted = false,
@@ -53,7 +55,8 @@ class ParticipantData {
   ParticipantData copyWith({
     String? id,
     String? fullName,
-    String? universityId,
+    String? studentId,
+    String? instructorId,
     UserRole? role,
     bool? isLocal,
     bool? isAudioMuted,
@@ -69,7 +72,8 @@ class ParticipantData {
     return ParticipantData(
       id: id ?? this.id,
       fullName: fullName ?? this.fullName,
-      universityId: universityId ?? this.universityId,
+      studentId: studentId ?? this.studentId,
+      instructorId: instructorId ?? this.instructorId,
       role: role ?? this.role,
       isLocal: isLocal ?? this.isLocal,
       isAudioMuted: isAudioMuted ?? this.isAudioMuted,
@@ -88,7 +92,8 @@ class ParticipantData {
     return {
       'id': id,
       'fullName': fullName,
-      'universityId': universityId,
+      'studentId': studentId,
+      'instructorId': instructorId,
       'role': role.name,
       'isAudioMuted': isAudioMuted,
       'isVideoMuted': isVideoMuted,
@@ -103,7 +108,8 @@ class ParticipantData {
     return ParticipantData(
       id: json['id'] as String,
       fullName: json['fullName'] as String,
-      universityId: json['universityId'] as String?,
+      studentId: json['studentId'] as String?,
+      instructorId: json['instructorId'] as String?,
       role: UserRole.values.firstWhere(
         (e) => e.name == json['role'],
         orElse: () => UserRole.student,

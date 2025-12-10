@@ -117,10 +117,12 @@ class ParticipantTile extends StatelessWidget {
                         ),
                     ],
                   ),
-                  if (participant.universityId != null) ...[
+                  if (participant.studentId != null || participant.instructorId != null) ...[
                     const SizedBox(height: 2),
                     Text(
-                      'ID: ${participant.universityId}',
+                      participant.isStudent
+                        ? 'Student ID: ${participant.studentId}'
+                        : 'Instructor ID: ${participant.instructorId}',
                       style: theme.textTheme.bodySmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

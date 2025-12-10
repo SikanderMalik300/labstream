@@ -15,7 +15,8 @@ enum UserRole {
 class User {
   final String id;
   final String fullName;
-  final String? universityId; // Only for students
+  final String? studentId; // Only for students
+  final String? instructorId; // Only for instructors
   final UserRole role;
   final String? token; // JWT token
   final DateTime? createdAt;
@@ -23,7 +24,8 @@ class User {
   User({
     required this.id,
     required this.fullName,
-    this.universityId,
+    this.studentId,
+    this.instructorId,
     required this.role,
     this.token,
     this.createdAt,
@@ -36,7 +38,8 @@ class User {
     return {
       'id': id,
       'fullName': fullName,
-      'universityId': universityId,
+      'studentId': studentId,
+      'instructorId': instructorId,
       'role': role.name,
       'token': token,
       'createdAt': createdAt?.toIso8601String(),
@@ -47,7 +50,8 @@ class User {
     return User(
       id: json['id'] as String,
       fullName: json['fullName'] as String,
-      universityId: json['universityId'] as String?,
+      studentId: json['studentId'] as String?,
+      instructorId: json['instructorId'] as String?,
       role: UserRole.values.firstWhere(
         (e) => e.name == json['role'],
         orElse: () => UserRole.student,
@@ -62,7 +66,8 @@ class User {
   User copyWith({
     String? id,
     String? fullName,
-    String? universityId,
+    String? studentId,
+    String? instructorId,
     UserRole? role,
     String? token,
     DateTime? createdAt,
@@ -70,7 +75,8 @@ class User {
     return User(
       id: id ?? this.id,
       fullName: fullName ?? this.fullName,
-      universityId: universityId ?? this.universityId,
+      studentId: studentId ?? this.studentId,
+      instructorId: instructorId ?? this.instructorId,
       role: role ?? this.role,
       token: token ?? this.token,
       createdAt: createdAt ?? this.createdAt,
