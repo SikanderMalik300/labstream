@@ -8,12 +8,16 @@
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name VARCHAR(255) NOT NULL,
-    university_id VARCHAR(100),
+    student_id VARCHAR(100),
+    instructor_id VARCHAR(100),
     role VARCHAR(20) NOT NULL CHECK (role IN ('student', 'instructor')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    CONSTRAINT check_student_university_id CHECK (
-        role != 'student' OR university_id IS NOT NULL
+    CONSTRAINT check_student_id CHECK (
+        role != 'student' OR student_id IS NOT NULL
+    ),
+    CONSTRAINT check_instructor_id CHECK (
+        role != 'instructor' OR instructor_id IS NOT NULL
     )
 );
 
@@ -92,7 +96,8 @@ CREATE TABLE IF NOT EXISTS hand_raises (
 
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
-CREATE INDEX IF NOT EXISTS idx_users_university_id ON users(university_id);
+CREATE INDEX IF NOT EXISTS idx_users_student_id ON users(student_id);
+CREATE INDEX IF NOT EXISTS idx_users_instructor_id ON users(instructor_id);
 
 CREATE INDEX IF NOT EXISTS idx_sessions_instructor ON sessions(instructor_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_room_name ON sessions(room_name);
@@ -134,9 +139,9 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
 -- Insert sample data for testing (optional)
 -- Uncomment to enable
 
--- INSERT INTO users (full_name, university_id, role) VALUES
---     ('John Doe', 'STD001', 'student'),
---     ('Jane Smith', 'STD002', 'student'),
---     ('Dr. Robert Brown', NULL, 'instructor');
+-- INSERT INTO users (full_name, student_id, instructor_id, role) VALUES
+--     ('John Doe', 'STD001', NULL, 'student'),
+--     ('Jane Smith', 'STD002', NULL, 'student'),
+--     ('Dr. Robert Brown', NULL, 'INST001', 'instructor');
 
 -- COMMIT;

@@ -9,10 +9,10 @@ class AuthService {
   static const String _userKey = 'current_user';
   static const String _tokenKey = 'auth_token';
 
-  // Login for students with name and university ID
+  // Login for students with name and student ID
   Future<User> loginStudent({
     required String fullName,
-    required String universityId,
+    required String studentId,
   }) async {
     try {
       final response = await http.post(
@@ -20,7 +20,7 @@ class AuthService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'fullName': fullName,
-          'universityId': universityId,
+          'studentId': studentId,
           'role': 'student',
         }),
       );
@@ -30,7 +30,7 @@ class AuthService {
         final user = User(
           id: data['userId'].toString(),
           fullName: fullName,
-          universityId: universityId,
+          studentId: studentId,
           role: UserRole.student,
           token: data['token'].toString(),
           createdAt: DateTime.now(),
@@ -46,14 +46,18 @@ class AuthService {
     }
   }
 
-  // Login for instructors
-  Future<User> loginInstructor({required String fullName}) async {
+  // Login for instructors with name and instructor ID
+  Future<User> loginInstructor({
+    required String fullName,
+    required String instructorId,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse(AppConfig.loginEndpoint),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'fullName': fullName,
+          'instructorId': instructorId,
           'role': 'instructor',
         }),
       );
@@ -63,6 +67,7 @@ class AuthService {
         final user = User(
           id: data['userId'].toString(),
           fullName: fullName,
+          instructorId: instructorId,
           role: UserRole.instructor,
           token: data['token'].toString(),
           createdAt: DateTime.now(),

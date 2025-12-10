@@ -107,7 +107,8 @@ class LiveKitService extends ChangeNotifier {
     _participants[_localParticipant!.sid] = ParticipantData(
       id: currentUser.id,
       fullName: currentUser.fullName,
-      universityId: currentUser.universityId,
+      studentId: currentUser.studentId,
+      instructorId: currentUser.instructorId,
       role: currentUser.role,
       liveKitParticipant: _localParticipant!,
       isLocal: true,
@@ -188,7 +189,8 @@ class LiveKitService extends ChangeNotifier {
     _participants[participant.sid] = ParticipantData(
       id: participant.identity,
       fullName: userInfo?['fullName'] ?? participant.name ?? 'Unknown',
-      universityId: userInfo?['universityId'],
+      studentId: userInfo?['studentId'],
+      instructorId: userInfo?['instructorId'],
       role: UserRole.values.firstWhere(
         (r) => r.name == userInfo?['role'],
         orElse: () => UserRole.student,

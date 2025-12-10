@@ -43,7 +43,7 @@ app.get('/health', (req, res) => {
 // Login endpoint
 app.post('/api/auth/login', (req, res) => {
   try {
-    const { fullName, universityId, role } = req.body;
+    const { fullName, studentId, instructorId, role } = req.body;
 
     if (!fullName || !role) {
       return res.status(400).json({
@@ -57,9 +57,15 @@ app.post('/api/auth/login', (req, res) => {
       });
     }
 
-    if (role === 'student' && !universityId) {
+    if (role === 'student' && !studentId) {
       return res.status(400).json({
-        error: 'University ID is required for students'
+        error: 'Student ID is required for students'
+      });
+    }
+
+    if (role === 'instructor' && !instructorId) {
+      return res.status(400).json({
+        error: 'Instructor ID is required for instructors'
       });
     }
 
@@ -70,7 +76,8 @@ app.post('/api/auth/login', (req, res) => {
     const user = {
       id: userId,
       fullName,
-      universityId: universityId || null,
+      studentId: studentId || null,
+      instructorId: instructorId || null,
       role,
       createdAt: new Date().toISOString()
     };
@@ -128,7 +135,8 @@ app.post('/api/auth/token', async (req, res) => {
         name: user.fullName,
         metadata: JSON.stringify({
           fullName: user.fullName,
-          universityId: user.universityId,
+          studentId: user.studentId,
+          instructorId: user.instructorId,
           role: user.role
         })
       }
@@ -144,7 +152,8 @@ app.post('/api/auth/token', async (req, res) => {
       room: roomName,
       canPublish,
       canSubscribe,
-      canPublishData
+      canPublishData,
+      canUpdateOwnMetadata: true
     });
 
     const token = await at.toJwt();

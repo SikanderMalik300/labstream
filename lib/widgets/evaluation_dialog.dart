@@ -49,7 +49,9 @@ class _EvaluationDialogState extends State<EvaluationDialog> {
             children: [
               // Student Info
               Text(
-                'ID: ${widget.participant.universityId ?? 'N/A'}',
+                widget.participant.isStudent
+                  ? 'Student ID: ${widget.participant.studentId ?? 'N/A'}'
+                  : 'Instructor ID: ${widget.participant.instructorId ?? 'N/A'}',
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
