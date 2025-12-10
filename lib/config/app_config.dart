@@ -2,7 +2,7 @@ class AppConfig {
   // Token Server Configuration
   static const String tokenServerUrl = String.fromEnvironment(
     'TOKEN_SERVER_URL',
-    defaultValue: 'http://localhost:3000',
+    defaultValue: 'http://localhost:3001',
   );
 
   // LiveKit Server Configuration
