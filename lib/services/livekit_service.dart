@@ -278,7 +278,9 @@ class LiveKitService extends ChangeNotifier {
       // Separate control messages from chat messages
       if (messageType == 'mute' || messageType == 'muteAll' || messageType == 'remove') {
         // Control message - forward to control handler
-        _onControlCallback?.call(messageType, decodedData);
+        if (messageType != null) {
+          _onControlCallback?.call(messageType, decodedData);
+        }
       } else if (messageType == 'chat') {
         // Chat message - forward to chat handler
         _onDataCallback?.call(decodedData);
