@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const { v4: uuidv4 } = require('uuid');
 const { AccessToken } = require('livekit-server-sdk');
-const { userQueries, sessionQueries, evaluationQueries, blockQueries } = require('./db');
+const { userQueries, sessionQueries, evaluationQueries, blockQueries, chatQueries, handRaiseQueries } = require('./db');
 
 // Load environment variables
 dotenv.config();
@@ -319,6 +319,109 @@ app.post('/api/sessions', async (req, res) => {
   } catch (error) {
     console.error('Session creation error:', error);
     res.status(500).json({ error: 'Failed to create session' });
+  }
+});
+
+// Save chat message endpoint
+app.post('/api/chat/messages', async (req, res) => {
+  try {
+    const { id, sessionId, senderId, senderName, content, messageType, isFromInstructor, timestamp } = req.body;
+
+    if (!sessionId || !senderId || !senderName || !content) {
+      return res.status(400).json({
+        error: 'Missing required fields: sessionId, senderId, senderName, and content are required'
+      });
+    }
+
+    const message = {
+      id: id || uuidv4(),
+      sessionId,
+      senderId,
+      senderName,
+      content,
+      messageType: messageType || 'text',
+      isFromInstructor: isFromInstructor || false,
+      timestamp: timestamp || new Date().toISOString()
+    };
+
+    const savedMessage = await chatQueries.create(message);
+    console.log('✅ Chat message saved to PostgreSQL:', savedMessage);
+
+    res.status(201).json(savedMessage);
+  } catch (error) {
+    console.error('Chat message error:', error);
+    res.status(500).json({ error: 'Failed to save chat message' });
+  }
+});
+
+// Get chat messages for a session
+app.get('/api/chat/messages/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const limit = parseInt(req.query.limit) || 100;
+
+    const messages = await chatQueries.findBySession(sessionId, limit);
+    res.json(messages);
+  } catch (error) {
+    console.error('Error fetching chat messages:', error);
+    res.status(500).json({ error: 'Failed to fetch chat messages' });
+  }
+});
+
+// Raise hand endpoint
+app.post('/api/hand-raises', async (req, res) => {
+  try {
+    const { sessionId, studentId } = req.body;
+
+    if (!sessionId || !studentId) {
+      return res.status(400).json({
+        error: 'Missing required fields: sessionId and studentId are required'
+      });
+    }
+
+    const handRaise = {
+      id: uuidv4(),
+      sessionId,
+      studentId,
+      raisedAt: new Date().toISOString()
+    };
+
+    const savedHandRaise = await handRaiseQueries.create(handRaise);
+    console.log('✅ Hand raise saved to PostgreSQL:', savedHandRaise);
+
+    res.status(201).json(savedHandRaise);
+  } catch (error) {
+    console.error('Hand raise error:', error);
+    res.status(500).json({ error: 'Failed to save hand raise' });
+  }
+});
+
+// Lower hand endpoint
+app.delete('/api/hand-raises/:sessionId/:studentId', async (req, res) => {
+  try {
+    const { sessionId, studentId } = req.params;
+
+    const loweredHandRaise = await handRaiseQueries.lower(sessionId, studentId);
+    console.log('✅ Hand lowered in PostgreSQL:', loweredHandRaise);
+
+    res.json(loweredHandRaise);
+  } catch (error) {
+    console.error('Lower hand error:', error);
+    res.status(500).json({ error: 'Failed to lower hand' });
+  }
+});
+
+// Get hand raises for a session
+app.get('/api/hand-raises/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const activeOnly = req.query.activeOnly !== 'false';
+
+    const handRaises = await handRaiseQueries.findBySession(sessionId, activeOnly);
+    res.json(handRaises);
+  } catch (error) {
+    console.error('Error fetching hand raises:', error);
+    res.status(500).json({ error: 'Failed to fetch hand raises' });
   }
 });
 
