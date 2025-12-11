@@ -84,7 +84,7 @@ class AuthService {
   }
 
   // Get LiveKit room token
-  Future<String> getRoomToken({
+  Future<Map<String, String?>> getRoomToken({
     required String userId,
     required String roomName,
     required UserRole role,
@@ -104,9 +104,15 @@ class AuthService {
         final data = jsonDecode(response.body);
         // Handle both string and map responses
         if (data is Map<String, dynamic>) {
-          return data['token'].toString();
+          return {
+            'token': data['token'].toString(),
+            'sessionId': data['sessionId']?.toString(),
+          };
         } else if (data is String) {
-          return data;
+          return {
+            'token': data,
+            'sessionId': null,
+          };
         } else {
           throw Exception('Unexpected token response format');
         }

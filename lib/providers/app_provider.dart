@@ -165,12 +165,19 @@ class AppProvider extends ChangeNotifier {
       _setLoading(true);
       _setError(null);
 
-      // Get room token from token server
-      final token = await _authService.getRoomToken(
+      // Get room token and sessionId from token server
+      final tokenData = await _authService.getRoomToken(
         userId: _currentUser!.id,
         roomName: roomName,
         role: _currentUser!.role,
       );
+
+      final token = tokenData['token'];
+      final sessionId = tokenData['sessionId'];
+
+      if (token == null) {
+        throw Exception('No token received from server');
+      }
 
       // Connect to LiveKit room
       await _liveKitService.connect(
@@ -180,7 +187,9 @@ class AppProvider extends ChangeNotifier {
         currentUser: _currentUser!,
       );
 
-      _currentSessionId = roomName;
+      // Store the sessionId from PostgreSQL database
+      _currentSessionId = sessionId;
+      debugPrint('✅ Joined room with sessionId: $sessionId');
       notifyListeners();
     } catch (e) {
       _setError('Failed to join room: $e');
