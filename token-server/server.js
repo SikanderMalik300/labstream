@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const { v4: uuidv4 } = require('uuid');
 const { AccessToken } = require('livekit-server-sdk');
+const { userQueries, sessionQueries, evaluationQueries, blockQueries } = require('./db');
 
 // Load environment variables
 dotenv.config();
@@ -25,12 +26,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// In-memory storage (replace with PostgreSQL in production)
-const users = new Map();
-const sessions = new Map();
-const blocks = new Map();
-const evaluations = new Map();
-
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
@@ -41,7 +36,7 @@ app.get('/health', (req, res) => {
 });
 
 // Login endpoint
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { fullName, studentId, instructorId, role } = req.body;
 
@@ -72,7 +67,7 @@ app.post('/api/auth/login', (req, res) => {
     // Generate user ID
     const userId = uuidv4();
 
-    // Store user
+    // Store user in PostgreSQL
     const user = {
       id: userId,
       fullName,
@@ -82,7 +77,8 @@ app.post('/api/auth/login', (req, res) => {
       createdAt: new Date().toISOString()
     };
 
-    users.set(userId, user);
+    const savedUser = await userQueries.create(user);
+    console.log('✅ User saved to PostgreSQL:', savedUser);
 
     // Generate simple session token (in production, use proper JWT)
     const sessionToken = Buffer.from(JSON.stringify({ userId, role }))
@@ -91,7 +87,7 @@ app.post('/api/auth/login', (req, res) => {
     res.json({
       userId,
       token: sessionToken,
-      user
+      user: savedUser
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -113,8 +109,8 @@ app.post('/api/auth/token', async (req, res) => {
       });
     }
 
-    // Get user data
-    const user = users.get(userId);
+    // Get user data from PostgreSQL
+    const user = await userQueries.findById(userId);
     if (!user) {
       console.log('❌ User not found:', userId);
       return res.status(404).json({
@@ -122,9 +118,25 @@ app.post('/api/auth/token', async (req, res) => {
       });
     }
 
-    console.log('✅ User found:', user.fullName);
+    console.log('✅ User found:', user.full_name);
     console.log('🔑 Using API Key:', process.env.LIVEKIT_API_KEY);
     console.log('🔑 Using API Secret:', process.env.LIVEKIT_API_SECRET ? 'SET' : 'NOT SET');
+
+    // Create or get session for this room (instructors only)
+    if (role === 'instructor') {
+      let session = await sessionQueries.findByRoomName(roomName);
+      if (!session) {
+        const newSession = {
+          id: uuidv4(),
+          roomName,
+          instructorId: userId,
+          startedAt: new Date().toISOString(),
+          participantCount: 0
+        };
+        session = await sessionQueries.create(newSession);
+        console.log('✅ Session created in PostgreSQL:', session);
+      }
+    }
 
     // Create LiveKit access token
     const at = new AccessToken(
@@ -132,11 +144,11 @@ app.post('/api/auth/token', async (req, res) => {
       process.env.LIVEKIT_API_SECRET,
       {
         identity: userId,
-        name: user.fullName,
+        name: user.full_name,
         metadata: JSON.stringify({
-          fullName: user.fullName,
-          studentId: user.studentId,
-          instructorId: user.instructorId,
+          fullName: user.full_name,
+          studentId: user.student_id,
+          instructorId: user.instructor_id,
           role: user.role
         })
       }
@@ -169,7 +181,7 @@ app.post('/api/auth/token', async (req, res) => {
 });
 
 // Block student endpoint
-app.post('/api/blocks', (req, res) => {
+app.post('/api/blocks', async (req, res) => {
   try {
     const { sessionId, studentId, instructorId, duration, reason } = req.body;
 
@@ -201,13 +213,11 @@ app.post('/api/blocks', (req, res) => {
       expiresAt: expiresAt ? expiresAt.toISOString() : null
     };
 
-    // Store block (use student ID as key for easy lookup)
-    if (!blocks.has(studentId)) {
-      blocks.set(studentId, []);
-    }
-    blocks.get(studentId).push(block);
+    // Save block to PostgreSQL
+    const savedBlock = await blockQueries.create(block);
+    console.log('✅ Block saved to PostgreSQL:', savedBlock);
 
-    res.status(201).json(block);
+    res.status(201).json(savedBlock);
   } catch (error) {
     console.error('Block creation error:', error);
     res.status(500).json({ error: 'Failed to create block' });
@@ -215,19 +225,12 @@ app.post('/api/blocks', (req, res) => {
 });
 
 // Get blocks for a student
-app.get('/api/blocks/:studentId', (req, res) => {
+app.get('/api/blocks/:studentId', async (req, res) => {
   try {
     const { studentId } = req.params;
-    const studentBlocks = blocks.get(studentId) || [];
+    const block = await blockQueries.isBlocked(studentId);
 
-    // Filter active blocks
-    const now = new Date();
-    const activeBlocks = studentBlocks.filter(block => {
-      if (!block.expiresAt) return true; // Permanent block
-      return new Date(block.expiresAt) > now;
-    });
-
-    res.json(activeBlocks);
+    res.json(block ? [block] : []);
   } catch (error) {
     console.error('Error fetching blocks:', error);
     res.status(500).json({ error: 'Failed to fetch blocks' });
@@ -235,7 +238,7 @@ app.get('/api/blocks/:studentId', (req, res) => {
 });
 
 // Save evaluation endpoint
-app.post('/api/evaluations', (req, res) => {
+app.post('/api/evaluations', async (req, res) => {
   try {
     const { id, sessionId, studentId, instructorId, score, notes } = req.body;
 
@@ -261,15 +264,14 @@ app.post('/api/evaluations', (req, res) => {
       instructorId,
       score,
       notes: notes || null,
-      createdAt: now,
-      updatedAt: now
+      createdAt: now
     };
 
-    // Store evaluation
-    const key = `${studentId}_${sessionId}`;
-    evaluations.set(key, evaluation);
+    // Save evaluation to PostgreSQL
+    const savedEvaluation = await evaluationQueries.create(evaluation);
+    console.log('✅ Evaluation saved to PostgreSQL:', savedEvaluation);
 
-    res.status(201).json(evaluation);
+    res.status(201).json(savedEvaluation);
   } catch (error) {
     console.error('Evaluation creation error:', error);
     res.status(500).json({ error: 'Failed to create evaluation' });
@@ -277,22 +279,10 @@ app.post('/api/evaluations', (req, res) => {
 });
 
 // Get evaluations for a student
-app.get('/api/evaluations/:studentId', (req, res) => {
+app.get('/api/evaluations/:studentId', async (req, res) => {
   try {
     const { studentId } = req.params;
-    const studentEvaluations = [];
-
-    // Find all evaluations for this student
-    for (const [key, evaluation] of evaluations) {
-      if (evaluation.studentId === studentId) {
-        studentEvaluations.push(evaluation);
-      }
-    }
-
-    // Sort by creation date (newest first)
-    studentEvaluations.sort((a, b) =>
-      new Date(b.createdAt) - new Date(a.createdAt)
-    );
+    const studentEvaluations = await evaluationQueries.findByStudent(studentId);
 
     res.json(studentEvaluations);
   } catch (error) {
@@ -302,7 +292,7 @@ app.get('/api/evaluations/:studentId', (req, res) => {
 });
 
 // Create session endpoint
-app.post('/api/sessions', (req, res) => {
+app.post('/api/sessions', async (req, res) => {
   try {
     const { roomName, instructorId } = req.body;
 
@@ -318,13 +308,14 @@ app.post('/api/sessions', (req, res) => {
       roomName,
       instructorId,
       startedAt: new Date().toISOString(),
-      endedAt: null,
       participantCount: 0
     };
 
-    sessions.set(sessionId, session);
+    // Save session to PostgreSQL
+    const savedSession = await sessionQueries.create(session);
+    console.log('✅ Session saved to PostgreSQL:', savedSession);
 
-    res.status(201).json(session);
+    res.status(201).json(savedSession);
   } catch (error) {
     console.error('Session creation error:', error);
     res.status(500).json({ error: 'Failed to create session' });
