@@ -227,6 +227,77 @@ const blockQueries = {
   }
 };
 
+// Chat message operations
+const chatQueries = {
+  create: async (message) => {
+    const result = await query(
+      `INSERT INTO chat_messages (id, session_id, sender_id, sender_name, content, message_type, is_from_instructor, timestamp)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING *`,
+      [
+        message.id,
+        message.sessionId,
+        message.senderId,
+        message.senderName,
+        message.content,
+        message.messageType || 'text',
+        message.isFromInstructor || false,
+        message.timestamp
+      ]
+    );
+    return result.rows[0];
+  },
+
+  findBySession: async (sessionId, limit = 100) => {
+    const result = await query(
+      'SELECT * FROM chat_messages WHERE session_id = $1 ORDER BY timestamp DESC LIMIT $2',
+      [sessionId, limit]
+    );
+    return result.rows;
+  }
+};
+
+// Hand raise operations
+const handRaiseQueries = {
+  create: async (handRaise) => {
+    const result = await query(
+      `INSERT INTO hand_raises (id, session_id, student_id, raised_at, is_active)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [
+        handRaise.id,
+        handRaise.sessionId,
+        handRaise.studentId,
+        handRaise.raisedAt,
+        true
+      ]
+    );
+    return result.rows[0];
+  },
+
+  lower: async (sessionId, studentId) => {
+    const result = await query(
+      `UPDATE hand_raises
+       SET is_active = false, lowered_at = $1
+       WHERE session_id = $2 AND student_id = $3 AND is_active = true
+       RETURNING *`,
+      [new Date().toISOString(), sessionId, studentId]
+    );
+    return result.rows[0];
+  },
+
+  findBySession: async (sessionId, activeOnly = true) => {
+    let queryText = 'SELECT * FROM hand_raises WHERE session_id = $1';
+    if (activeOnly) {
+      queryText += ' AND is_active = true';
+    }
+    queryText += ' ORDER BY raised_at DESC';
+
+    const result = await query(queryText, [sessionId]);
+    return result.rows;
+  }
+};
+
 module.exports = {
   pool,
   query,
@@ -234,5 +305,7 @@ module.exports = {
   userQueries,
   sessionQueries,
   evaluationQueries,
-  blockQueries
+  blockQueries,
+  chatQueries,
+  handRaiseQueries
 };

@@ -289,6 +289,7 @@ class AppProvider extends ChangeNotifier {
       await _chatService.sendMessage(
         content: message,
         currentUser: _currentUser!,
+        sessionId: _currentSessionId,
       );
     } catch (e) {
       _setError('Failed to send message: $e');
@@ -299,7 +300,10 @@ class AppProvider extends ChangeNotifier {
   Future<void> raiseHand() async {
     try {
       if (_currentUser == null) return;
-      await _chatService.raiseHand(currentUser: _currentUser!);
+      await _chatService.raiseHand(
+        currentUser: _currentUser!,
+        sessionId: _currentSessionId,
+      );
     } catch (e) {
       _setError('Failed to raise hand: $e');
     }
@@ -309,7 +313,10 @@ class AppProvider extends ChangeNotifier {
   Future<void> lowerHand() async {
     try {
       if (_currentUser == null) return;
-      await _chatService.lowerHand(currentUser: _currentUser!);
+      await _chatService.lowerHand(
+        currentUser: _currentUser!,
+        sessionId: _currentSessionId,
+      );
     } catch (e) {
       _setError('Failed to lower hand: $e');
     }
