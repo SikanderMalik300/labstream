@@ -122,20 +122,18 @@ app.post('/api/auth/token', async (req, res) => {
     console.log('🔑 Using API Key:', process.env.LIVEKIT_API_KEY);
     console.log('🔑 Using API Secret:', process.env.LIVEKIT_API_SECRET ? 'SET' : 'NOT SET');
 
-    // Create or get session for this room (instructors only)
-    if (role === 'instructor') {
-      let session = await sessionQueries.findByRoomName(roomName);
-      if (!session) {
-        const newSession = {
-          id: uuidv4(),
-          roomName,
-          instructorId: userId,
-          startedAt: new Date().toISOString(),
-          participantCount: 0
-        };
-        session = await sessionQueries.create(newSession);
-        console.log('✅ Session created in PostgreSQL:', session);
-      }
+    // Create or get session for this room
+    let session = await sessionQueries.findByRoomName(roomName);
+    if (!session && role === 'instructor') {
+      const newSession = {
+        id: uuidv4(),
+        roomName,
+        instructorId: userId,
+        startedAt: new Date().toISOString(),
+        participantCount: 0
+      };
+      session = await sessionQueries.create(newSession);
+      console.log('✅ Session created in PostgreSQL:', session);
     }
 
     // Create LiveKit access token
@@ -149,7 +147,8 @@ app.post('/api/auth/token', async (req, res) => {
           fullName: user.full_name,
           studentId: user.student_id,
           instructorId: user.instructor_id,
-          role: user.role
+          role: user.role,
+          sessionId: session ? session.id : null
         })
       }
     );
@@ -173,7 +172,12 @@ app.post('/api/auth/token', async (req, res) => {
     console.log('✅ Token generated successfully');
     console.log('Token (first 50 chars):', token.substring(0, 50) + '...');
 
-    res.json({ token });
+    // Return token AND sessionId
+    res.json({
+      token,
+      sessionId: session ? session.id : null,
+      roomName
+    });
   } catch (error) {
     console.error('❌ Token generation error:', error);
     res.status(500).json({ error: 'Failed to generate token' });
